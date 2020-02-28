@@ -25,16 +25,18 @@ class Scryfall:
         return self.nameCache[cardname]
 
     def findPrintings(self, oracleId):
-        response = requests.get(self.searchEndpoint,{'order':'released','q':'oracleid:'+oracleId,'unique':'prints'})
-        sleep(0.1)
-        if (response.status_code == 200):
-            printingsResponse = response.json()
-            printings = {}
-            for printing in printingsResponse['data']:
-                printings[printing['id']] = printing
-            return printings
-        else:
-            return None
+        if (not oracleId in self.printCache.keys()):
+            response = requests.get(self.searchEndpoint,{'order':'released','q':'oracleid:'+oracleId,'unique':'prints'})
+            sleep(0.1) # It's important to be nice.
+            if (response.status_code == 200):
+                printingsResponse = response.json()
+                printings = {}
+                for printing in printingsResponse['data']:
+                    printings[printing['id']] = printing
+                self.printCache[oracleId] = printings
+            else:
+                raise ApiError("Printings not found!")
+        return self.printCache[oracleId] = printings
 
     def downloadImage(self, url, imageName):
         response = requests.get(url, stream=True)

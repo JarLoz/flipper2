@@ -7,6 +7,7 @@ class Card:
         self.name = cardname
         self.selectedPrinting = None
         self.printings = None
+        self.cardId = None
 
     def imageName(self, scryId = None):
         if (scryId == None):
@@ -37,10 +38,11 @@ class Card:
                 }
             }
 
-def createCard(cardname):
+def createCard(cardname, cardId):
     api = getApi()
     scryfallData = api.findCard(cardname)
     card = Card(cardname)
+    card.cardId = cardId
     card.selectedPrinting = scryfallData['id']
     if ('prints_search_uri' in scryfallData.keys()):
         printings = api.findPrintings(scryfallData['oracle_id'])

@@ -1,5 +1,6 @@
 from .scryfall import getApi
 from .printer import printMessage
+from .card import createCard
 
 class Deck:
     def __init__(self, name):
@@ -11,8 +12,7 @@ class Deck:
         self.nextCardId = 100
     
     def addCardToMainboard(self, amount, cardname):
-        card = self.api.findCard(cardname)
-        card.cardId = self.nextCardId
+        card = createCard(cardname, self.nextCardId)
         self.mainboard.append((amount, card))
 
         self.nextCardId += 1
@@ -67,7 +67,7 @@ class Deck:
             imageNames = list(map(lambda cardTuple: cardTuple[1].imageName(), chunk))
             # TODO Create DeckImages here.
             deckImageName = deckName+'_image_'+str(imageIndex)+".jpg"
-            deckImageNames.append([deckImageName])
+            deckImageNames.append(deckImageName)
             callMontage(imageNames, deckImageName, hires, output)
             imageIndex += 1
         return deckImageNames
