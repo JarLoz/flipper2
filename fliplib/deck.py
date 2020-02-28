@@ -8,10 +8,17 @@ class Deck:
         self.extra = []
         self.api = getApi()
         self.name = name
+        self.nextCardId = 100
     
     def addCardToMainboard(self, amount, cardname):
         card = self.api.findCard(cardname)
+        card.cardId = self.nextCardId
         self.mainboard.append((amount, card))
+
+        self.nextCardId += 1
+        # This was to shuffle things around with the images? Skips from 169 to 200 and so on.
+        if int(str(self.nextCardId)[1:]) == 69:
+            self.nextCardId += 31
 
     def printDecklist(self):
         """
@@ -32,22 +39,15 @@ class Deck:
 
         containedObjects = []
         deckIds = []
-        cardId = 100
 
         for cardTuple in self.mainboard:
             amount = cardTuple[0]
             card = cardTuple[1]
-            cardObject = card.getTTSCardObject(cardId)
-
+            cardObject = card.getTTSCardObject()
             # TODO Figure out how to put several copies of similar card into the deck, maybe this is wrong?
             containedObjects.append(cardObject)
             for _ in range(amount):
-                deckIds.append(cardId)
-            cardId += 1
-
-            # This was to shuffle things around with the images? Skips from 169 to 200 and so on.
-            if int(str(cardId)[1:]) == 69:
-                cardId += 31
+                deckIds.append(cardObject.cardId)
 
         ttsDeckObject['ContainedObjects'] = containedObjects
         ttsDeckObject['DeckIds'] = deckIds
@@ -60,4 +60,14 @@ class Deck:
         return ttsDeckObject
     
     def getDeckImages(self):
-        return []
+        imageIndex = 0
+        deckImageNames = []
+        for i in range(0,len(self.mainboard),69) :
+            chunk = self.mainboard[i:i+69]
+            imageNames = list(map(lambda cardTuple: cardTuple[1].imageName(), chunk))
+            # TODO Create DeckImages here.
+            deckImageName = deckName+'_image_'+str(imageIndex)+".jpg"
+            deckImageNames.append([deckImageName])
+            callMontage(imageNames, deckImageName, hires, output)
+            imageIndex += 1
+        return deckImageNames

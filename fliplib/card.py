@@ -1,16 +1,14 @@
 import os
 import requests
 import shutil
+from .scryfall import getApi
 
 class Card:
     scryfallData = None
     _imageName = None
 
-    def __init__(self, scryfallData):
-        self.scryfallData = scryfallData
-
-    def name(self):
-        return self.scryfallData['name']
+    def __init__(self, cardname):
+        self.name = cardname
 
     def imageName(self):
         if (self._imageName == None):
@@ -22,13 +20,14 @@ class Card:
             with open(self._imageName, "wb") as outfile:
                 shutil.copyfileobj(response.raw, outfile)
             del response
+            sleep(0.1) # Still being very nice with scryfall.
         return self._imageName
 
-    def getTTSCardObject(self, cardId):
+    def getTTSCardObject(self):
         return {
             'Name':'Card',
             'Nickname':self.name(),
-            'CardID':cardId,
+            'CardID':self.cardId,
             'Transform':{
                 'posX':2.5,
                 'posY':2.5,
