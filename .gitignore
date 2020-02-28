@@ -1,3 +1,5 @@
+imageCache/
+apiCache/
 venv/
 *.swp
 *.pyc
