@@ -1,27 +1,23 @@
 import os
-import requests
-import shutil
 from .scryfall import getApi
 
 class Card:
-    scryfallData = None
-    _imageName = None
 
     def __init__(self, cardname):
         self.name = cardname
+        self.selectedPrinting = None
+        self.printings = None
 
-    def imageName(self):
-        if (self._imageName == None):
-            self._imageName = 'imageCache/front_' + self.scryfallData['id'] + '.jpg'
-        if (not os.path.isfile(self._imageName)):
+    def imageName(self, scryId = None):
+        if (scryId == None):
+            scryId = self.selectedPrinting
+        imageName = 'imageCache/front_' + scryId + '.jpg'
+        if (not os.path.isfile(imageName)):
             # Image not downloaded.
-            url = self.scryfallData['image_uris']['normal']
-            response = requests.get(url, stream=True)
-            with open(self._imageName, "wb") as outfile:
-                shutil.copyfileobj(response.raw, outfile)
-            del response
-            sleep(0.1) # Still being very nice with scryfall.
-        return self._imageName
+            api = getApi()
+            url = self.printings[scryId]['image_uris']['normal']
+            api.downloadImage(url, imageName)
+        return imageName
 
     def getTTSCardObject(self):
         return {
@@ -40,3 +36,16 @@ class Card:
                 'scaleZ':1
                 }
             }
+
+def createCard(cardname):
+    api = getApi()
+    scryfallData = api.findCard(cardname)
+    card = Card(cardname)
+    card.selectedPrinting = scryfallData['id']
+    if ('prints_search_uri' in scryfallData.keys()):
+        printings = api.findPrintings(scryfallData['oracle_id'])
+    else:
+        printings = {scryfallData['id'] : scryfallData}
+    card.printings = printings
+
+    return card
